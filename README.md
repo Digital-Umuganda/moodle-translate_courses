@@ -26,6 +26,16 @@ Then, click continue.
 4. Assign a shortname to your course
 ![](images/shortname.png) and click continue. Wait for the translation to finish. When the translation finshes, you will be automatically redirected to the new course.
 
+Inline course text translation
+==============================
+1. Enable the widget by toggling the toggle in the navigation bar
+![](images/enablewidget.png)
+
+2. Select the text you want to translate
+![](images/selecttext.png)
+After that, you will see a popup widget
+![](images/waitfortranslation.png)
+
 **Requirements**
 ================
 User requirements
