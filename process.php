@@ -128,6 +128,10 @@ if (@isset($res['id'])) {
     try {
         $course = $DB->get_record('course', array('id' => $res['id']));
 
+        // Hide course
+        $course->visible = 0;
+        $course->visibleold = 0;
+
         $course->summary = generate_translation($course->summary, $sourcelanguage, $targetlanguage, $translator);
 
         $DB->update_record('course', $course);

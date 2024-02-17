@@ -97,5 +97,14 @@ if ($hassiteconfig) {
                 $options
             )
         );
+
+        $settings->add(
+            new admin_setting_configtext(
+                'local_translate_courses/mturl',
+                get_string('mturl', 'local_translate_courses'),
+                '',
+                'https://nmt-api.umuganda.digital/api/v1/translate/',
+            )
+        );
     }
 }

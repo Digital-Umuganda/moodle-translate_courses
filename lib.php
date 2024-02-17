@@ -442,7 +442,7 @@ function custom_translation($text, $sourcelanguage, $targetlanguage)
         );
     }
 
-    $url = new moodle_url("https://nmt-api.umuganda.digital/api/v1/translate/");
+    $url = new moodle_url(get_config('local_translate_courses', 'mturl'));
 
     try {
         $params = [
@@ -454,13 +454,15 @@ function custom_translation($text, $sourcelanguage, $targetlanguage)
         $params['text'] = $text;
         $resp = $curl->post($url->out(false), json_encode($params));
     } catch (\Exception $ex) {
-        error_log("Error calling Translate to Kinya API: \n" . $ex->getMessage());
+        error_log("Error: Mbaza Translate not responding");
+        // error_log("Error: Mbaza Translate not responding: \n" . $ex->getMessage());
         return null;
     }
 
     $info = $curl->get_info();
     if ($info['http_code'] != 200) {
-        error_log("Error calling Translate to Kinya API: \n" . $info['http_code'] . "\nFailed Text:\n" . substr($text, 0, 1000) . "\n" . print_r($curl->get_raw_response(), true));
+        // error_log("Error: Mbaza Translate not responding: \n" . $info['http_code'] . "\nFailed Text:\n" . substr($text, 0, 1000) . "\n" . print_r($curl->get_raw_response(), true));
+        error_log("Error: Mbaza Translate not responding: \n");
         return null;
     }
 
@@ -500,15 +502,31 @@ function google_translate(string $text, string $sourcelanguage, string $targetla
  * @throws Exception If an error occurs during translation.
  * @return string The translated text.
  */
-function generate_translation(string $text, string $sourcelanguage, string $targetlanguage, string $function = "custom")
+function generate_translation(string $html, string $sourcelanguage, string $targetlanguage, string $function = "custom")
 {
-    // print_r([$text, $sourcelanguage, $targetlanguage, $function]);
-    if ($function == "custom") {
-        return custom_translation($text, $sourcelanguage, $targetlanguage);
-    } else if ($function == "google_translate") {
-        return google_translate($text, $sourcelanguage, $targetlanguage);
+    $tagsToRemove = ['img', 'video', 'audio'];
+    $removedTags = [];
+    // Remove specified tags before sending to the API
+    $modifiedHtml = removeTags($html, $tagsToRemove, $removedTags);
+
+    $extractedText = splitTextBetweenDivAndP($modifiedHtml);
+
+    foreach ($extractedText as $index => $text) {
+        // Send each extracted text to the API
+        if ($function == "custom") {
+            $apiResponse = custom_translation($text, $sourcelanguage, $targetlanguage);
+        } else if ($function == "google_translate") {
+            $apiResponse = google_translate($text, $sourcelanguage, $targetlanguage);
+        }
+
+        // Replace the original text with the API response
+        $modifiedHtml = str_replace($text, $apiResponse, $modifiedHtml);
     }
-    return $text;
+
+    // Add removed tags back to the modified HTML
+    $finalHtml = addTagsBack($modifiedHtml, $removedTags);
+    
+    return $finalHtml;
 }
 
 function save_related_courses($courseid, $related_course)
@@ -564,4 +582,62 @@ function save_related_courses($courseid, $related_course)
 
         $DB->insert_record('customfield_data', $dataObject);
     }
+}
+
+function removeTags($html, $tags, &$removedTags) {
+    foreach ($tags as $tag) {
+        $pattern = '/<' . $tag . '\s*.*?\/' . $tag . '>|<' . $tag . '\s*.*?\/>|<' . $tag . '\s*.*?>/s';
+        preg_match_all($pattern, $html, $matches);
+        
+        // Save the removed tags for later restoration
+        $removedTags[$tag] = $matches[0];
+
+        // Remove the tags from the HTML
+        $html = preg_replace($pattern, '[removeme_' . $tag . ']', $html);
+    }
+    return $html;
+}
+
+function addTagsBack($modifiedHtml, $removedTags) {
+    foreach ($removedTags as $tag => $tagsToRemove) {
+        foreach ($tagsToRemove as $tagToRemove) {
+            $modifiedHtml = preg_replace('/\[removeme_' . $tag . '\]/', $tagToRemove, $modifiedHtml, 1);
+        }
+    }
+    return $modifiedHtml;
+}
+
+function splitTextBetweenDivAndP($html)
+{
+    preg_match_all('/<div[^>]*>(.*?)<\/div>|<p[^>]*>(.*?)<\/p>/', $html, $matches);
+    $combinedText = array_merge($matches[1], $matches[2]);
+    $filteredText = array_filter($combinedText);
+    return array_values($filteredText);
+}
+
+function processTranslation(string $html, string $sourcelanguage, string $targetlanguage, string $function = "custom")
+{
+    $tagsToRemove = ['img', 'video', 'audio'];
+    $removedTags = [];
+    // Remove specified tags before sending to the API
+    $modifiedHtml = removeTags($html, $tagsToRemove, $removedTags);
+
+    $extractedText = splitTextBetweenDivAndP($modifiedHtml);
+
+    foreach ($extractedText as $index => $text) {
+        // Send each extracted text to the API
+        if ($function == "custom") {
+            $apiResponse = custom_translation($text, $sourcelanguage, $targetlanguage);
+        } else if ($function == "google_translate") {
+            $apiResponse = google_translate($text, $sourcelanguage, $targetlanguage);
+        }
+
+        // Replace the original text with the API response
+        $modifiedHtml = str_replace($text, $apiResponse, $modifiedHtml);
+    }
+
+    // Add removed tags back to the modified HTML
+    $finalHtml = addTagsBack($modifiedHtml, $tagsToRemove);
+    
+    return $finalHtml;
 }

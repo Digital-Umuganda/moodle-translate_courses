@@ -61,3 +61,4 @@ $string['selectmods'] = 'Select modules to translate';
 $string['startdate'] = 'Start date';
 $string['starttime'] = 'Start time';
 $string['useastemplate'] = 'Use as template';
+$string['mturl'] = "Mbaza MT URL";

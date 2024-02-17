@@ -144,7 +144,7 @@ class coursecategorieslistform extends \moodleform
             'autocomplete',
             'sel_trans',
             get_string('selecttranslator', 'local_translate_courses'),
-            ["custom" => "MT Translation"],
+            ["custom" => "Mbaza Translate"],
             $options
         );
 
