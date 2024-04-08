@@ -27,12 +27,9 @@ You can set the course content language using **one** of the following ways:
 - Go to "Site Administration >> Plugins &gt;&gt; Local plugins &gt;&gt; AI Course translations" and configure the plugin.
   <div align="center"><img src="images/scrnli_4_8_2024_12-08-14 PM.png" style="width: 80%" /></div>
   <div align="center"><img src="images/scrnli_4_8_2024_12-08-55 PM.png" style="width: 80%" /></div>
-## Set the target language for the widget/popup translations ##
-You can enable or disable widget/popup translations using **one** of the following ways:
-1. You can set this in settings
-<div align="center"><img src="images/Set target widget language via settings.png" style="width: 80%" /></div>
-2. Or you can set it by changing the target language using the widget/popup.
-<div align="center"><img src="images/Set target widget language using the widget.png" style="width: 80%" /></div>
+## Translate a course ##
+1. Open a course
+2. Enable the "Edit mode"
 
 **N.B**: Users with the 'filter/translations:edittranslations' capability will see an icon in the top right hand corner of the screen to enable the translator view of the course. At this point all translatable text will have an icon injected next to it to allow it to be translated.
 
