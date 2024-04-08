@@ -12,7 +12,7 @@ https://github.com/Digital-Umuganda/moodle-theme
 # To Use it #
 In order to use this plugin, you have to first install and enable the plugin. If you don't know how to install or how to enable the plugin, the instructions can be found at the beginning of this page.
 
-## For the plugin to work, the user has to have the following roles:
+## For the plugin to work, the user has to have the following capabilities:
 - moodle/course:create
 - moodle/restore:restorecourse
 - moodle/backup:backupcourse
