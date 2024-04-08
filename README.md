@@ -30,40 +30,24 @@ You can set the course content language using **one** of the following ways:
 ## Translate a course ##
 1. Open a course
 2. Enable the "Edit mode"
-
-**N.B**: Users with the 'filter/translations:edittranslations' capability will see an icon in the top right hand corner of the screen to enable the translator view of the course. At this point all translatable text will have an icon injected next to it to allow it to be translated.
-
-# To migrate from filter_fulltranslate #
-A CLI tool is available to migrate all translations across from the filter_fulltranslate.
-
-It is recommended that you clean out any unwanted translations that may have been generated as follows:
-````
-delete from mdl_filter_fulltranslate where sourcetext like '%{mlang%';
-````
-
-You can then copy the translations from filter_fulltranslate into filter_translations as follows:
-````
-php cli/migrate_filter_fulltranslate.php --confirm
-````
-
-# To add translation span tags to existing data #
-A CLI tool is available to automatically add span tags to existing data. Please use with extreme caution.
-
-You can run the tool as follows which will show help text:
-````
-php cli/insert_spans.php
-````
+   <div align="center"><img src="images/scrnli_4_8_2024_12-14-02 PM.png" style="width: 80%" /></div>
+3. After that, you will see a translate button
+   <div align="center"><img src="images/crnli_4_8_2024_12-16-01 PM.png" style="width: 80%" /></div>
+4. Click on that button
+5. On the next page, configure your translation's source language and target language as well as the translation model and choose the modules you want to translate
+   <div align="center"><img src="images/scrnli_4_8_2024_12-16-45 PM.png" style="width: 80%" /></div>
+6. After that, click on "Continue". And then you will be redirected to another page where you will find the course name is already translated. All you need is to assign a shortname and then click "Translate".
+   <div align="center"><img src="scrnli_4_8_2024_12-17-29 PM.png" style="width: 80%" /></div>
+   
 
 Author
 ------
 
-The module has been written and is currently maintained by Andrew Hancox but now it is being maintained by Elvis Peace NDAHAYO RUGERO on behalf of [Digital Umuganda](https://digitalumuganda.com).
+The module is being maintained by Elvis Peace NDAHAYO RUGERO on behalf of [Digital Umuganda](https://digitalumuganda.com).
 
 Useful links
 ------------
 
-* [Original documentation](https://docs.moodle.org/311/en/Content_translation_plugin_set)
-* [Bug tracker](https://github.com/Digital-Umuganda/moodle-filter_translations/issues)
 
 License
 -------
