@@ -32,7 +32,7 @@ You can set the course content language using **one** of the following ways:
 2. Enable the "Edit mode"
    <div align="center"><img src="images/scrnli_4_8_2024_12-14-02 PM.png" style="width: 80%" /></div>
 3. After that, you will see a translate button
-   <div align="center"><img src="images/crnli_4_8_2024_12-16-01 PM.png" style="width: 80%" /></div>
+   <div align="center"><img src="images/scrnli_4_8_2024_12-16-01 PM.png" style="width: 80%" /></div>
 4. Click on that button
 5. On the next page, configure your translation's source language and target language as well as the translation model and choose the modules you want to translate
    <div align="center"><img src="images/scrnli_4_8_2024_12-16-45 PM.png" style="width: 80%" /></div>
