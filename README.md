@@ -21,7 +21,7 @@ You can set the course content language using **one** of the following ways:
 1. Open a course
 2. Navigate to the course settings
 3. Set the course's language
-<div align="center"><img src="images/Set course content language via settings.png" style="width: 80%" /></div>
+<div align="center"><img src="images/scrnli_4_8_2024_11-52-04%20AM.png" style="width: 80%" /></div>
 
 ## Enable or disable widget/popup translations ##
 You can enable or disable widget/popup translations using **one** of the following ways:
