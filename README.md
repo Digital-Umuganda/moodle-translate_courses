@@ -18,17 +18,17 @@ Let's take a look at how we are going to do that.
 
 ## Set the course content language ##
 You can set the course content language using **one** of the following ways:
-1. The easy way to do this is to use the top navigation bar. That navigation bar can only be accessed when you are on a course page.
-<div align="center"><img src="images/Set course content language using the navigation bar.png" style="width: 80%" /></div>
-2. The other way is to set it in the settings
+1. Open a course
+2. Navigate to the course settings
+3. Set the course's language
 <div align="center"><img src="images/Set course content language via settings.png" style="width: 80%" /></div>
 
 ## Enable or disable widget/popup translations ##
 You can enable or disable widget/popup translations using **one** of the following ways:
-1. The easy way to do this is to use the top navigation bar. That navigation bar can only be accessed when you are on a course page.
-<div align="center"><img src="images/Enable or disable widget using the navigation bar.png" style="width: 80%" /></div>
-2. The other way is to set it in the settings
+1. First, enable it in the settings: Go to "Site Administration >> Appearance &gt;&gt; Boost custom translation" and check the box that says "Enable widget"
 <div align="center"><img src="images/Enable or disable widget via settings.png" style="width: 80%" /></div>
+2. After that, on every course, you will find a toggle to switch on/off the widget in the current course. That navigation bar can only be accessed when you are on a course page.
+<div align="center"><img src="images/Enable or disable widget using the navigation bar.png" style="width: 80%" /></div>
 
 ## Set the target language for the widget/popup translations ##
 You can enable or disable widget/popup translations using **one** of the following ways:
