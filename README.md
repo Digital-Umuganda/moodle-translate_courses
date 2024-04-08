@@ -37,7 +37,7 @@ You can set the course content language using **one** of the following ways:
 5. On the next page, configure your translation's source language and target language as well as the translation model and choose the modules you want to translate
    <div align="center"><img src="images/scrnli_4_8_2024_12-16-45 PM.png" style="width: 80%" /></div>
 6. After that, click on "Continue". And then you will be redirected to another page where you will find the course name is already translated. All you need is to assign a shortname and then click "Translate".
-   <div align="center"><img src="scrnli_4_8_2024_12-17-29 PM.png" style="width: 80%" /></div>
+   <div align="center"><img src="images/scrnli_4_8_2024_12-17-29 PM.png" style="width: 80%" /></div>
    
 
 Author
