@@ -1,10 +1,10 @@
 This is a Moodle plugin that is used to translate course from English to Kinyarwanda and vice versa. 
 
 # To Install it manually #
-- Unzip the plugin in the your Moodle project's /local directory.
+- Unzip the plugin in your Moodle project's /local directory.
 - Install the compulsory Moodle theme:
 https://github.com/Digital-Umuganda/moodle-theme 
-- And also, install the required cutom field: https://github.com/Digital-Umuganda/moodle-courseselect 
+- Also, install the required custom field: https://github.com/Digital-Umuganda/moodle-courseselect 
 
 # To Enable it #
 - Go to "Site Administration >> Plugins &gt;&gt; Local plugins &gt;&gt; AI Course translations" and enable it in its settings
