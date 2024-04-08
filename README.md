@@ -12,6 +12,11 @@ https://github.com/Digital-Umuganda/moodle-theme
 # To Use it #
 In order to use this plugin, you have to first install and enable the plugin. If you don't know how to install or how to enable the plugin, the instructions can be found at the beginning of this page.
 
+## For the plugin to work, the user has to have the following roles:
+- moodle/course:create
+- moodle/restore:restorecourse
+- moodle/backup:backupcourse
+
 After enabling the plugin, you can set the course content language, and configure the plugin.
 
 Let's take a look at how we are going to do that.
@@ -43,7 +48,7 @@ You can set the course content language using **one** of the following ways:
 Author
 ------
 
-The module is being maintained by Elvis Peace NDAHAYO RUGERO on behalf of [Digital Umuganda](https://digitalumuganda.com).
+This plugin is being maintained by Elvis Peace NDAHAYO RUGERO on behalf of [Digital Umuganda](https://digitalumuganda.com).
 
 Useful links
 ------------
