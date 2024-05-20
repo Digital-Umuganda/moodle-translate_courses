@@ -118,33 +118,74 @@ class coursecategorieslistform extends \moodleform
 
         $categorieslist = $categorieslistdefault + $categorieslistraw;
 
+        $sourcelanguagesasstring = get_config('local_translate_courses', 'source_languages');
+        $sourcelanguagesasarray = explode(',', $sourcelanguagesasstring);
+        $sourcelanguagesasarraywkeys = [];
+
+        foreach ($sourcelanguagesasarray as $key => $value) {
+            $languagecode = explode('(', $value);
+            $languagecode = $languagecode[1];
+            $languagecode = explode(')', $languagecode);
+            $languagecode = $languagecode[0];
+            $languagecode = strtolower($languagecode);
+            $languagecode = trim($languagecode);
+            $sourcelanguagesasarraywkeys[$languagecode] = trim(explode('(', $value)[0]);
+        }
+
         $mform->addElement(
             'autocomplete',
             'sel_src_lang',
             get_string('selectsrclang', 'local_translate_courses'),
-            ["en" => "English"],
+            $sourcelanguagesasarraywkeys,
             $options
         );
 
         $mform->addRule('sel_src_lang', get_string('requiredelement', 'form'), 'required', null, 'client');
         $mform->addRule('sel_src_lang', get_string('requiredelement', 'form'), 'required', null, 'server');
 
+        $targetlanguagesasstring = get_config('local_translate_courses', 'target_languages');
+        $targetlanguagesasarray = explode(',', $targetlanguagesasstring);
+        $targetlanguagesasarraywkeys = [''];
+
+        foreach ($targetlanguagesasarray as $key => $value) {
+            $languagecode = explode('(', $value);
+            $languagecode = $languagecode[1];
+            $languagecode = explode(')', $languagecode);
+            $languagecode = $languagecode[0];
+            $languagecode = strtolower($languagecode);
+            $languagecode = trim($languagecode);
+            $targetlanguagesasarraywkeys[$languagecode] = trim(explode('(', $value)[0]);
+        }
+
         $mform->addElement(
             'autocomplete',
             'sel_tgt_lang',
             get_string('selecttgtlang', 'local_translate_courses'),
-            ['rw' => "Kinyarwanda"],
+            $targetlanguagesasarraywkeys,
             $options
         );
 
         $mform->addRule('sel_tgt_lang', get_string('requiredelement', 'form'), 'required', null, 'client');
         $mform->addRule('sel_tgt_lang', get_string('requiredelement', 'form'), 'required', null, 'server');
 
+        $currentacceptedmodels = [
+            'custom' => 'Mbaza MT',
+            'google_translate' => 'Google Translation',
+        ];
+
+        $enabledmodelsasstring = get_config('local_translate_courses', 'model');
+        $explodedenabledmodels = explode(',', $enabledmodelsasstring);
+        $enabledmodels = [];
+
+        foreach ($explodedenabledmodels as $key => $value) {
+            $enabledmodels[$value] = $currentacceptedmodels[$value];
+        }
+
         $mform->addElement(
             'autocomplete',
             'sel_trans',
             get_string('selecttranslator', 'local_translate_courses'),
-            ["custom" => "Mbaza Translate"],
+            $enabledmodels,
             $options
         );
 
@@ -229,3 +270,5 @@ class coursecategorieslistform extends \moodleform
         return $this->defaultcategory;
     }
 }
+
+

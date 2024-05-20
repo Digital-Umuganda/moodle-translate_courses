@@ -30,59 +30,21 @@ $contextuser = context_user::instance($USER->id);
 
 $viewcoursetemplates = has_capability('local/translate_courses:view', $contextuser);
 
-$capabilities = array(
-    'moodle/backup:backupcourse',
-    'moodle/backup:userinfo',
-    'moodle/restore:restorecourse',
-    'moodle/restore:userinfo',
-    'moodle/course:create',
-    'moodle/site:approvecourse',
+$ADMIN->add(
+    'courses',
+    new admin_externalpage(
+        'local_translate_courses',
+        get_string('addcourse', 'local_translate_courses'),
+        new moodle_url('/local/translate_courses/index.php'),
+    )
 );
 
-$systemcontext = context_system::instance();
-
-if (has_capability('local/translate_courses:view', $contextuser)
-        && has_all_capabilities($capabilities, $systemcontext)
-) {
-    $ADMIN->add(
-        'courses',
-        new admin_externalpage(
-            'local_translate_courses',
-            get_string('addcourse', 'local_translate_courses'),
-            new moodle_url('/local/translate_courses/index.php'),
-            $capabilities
-        )
-    );
-}
-
 if ($hassiteconfig) {
-    $settings = new admin_settingpage('local_translate_courses_settings', 'Course templates');
+    $settings = new admin_settingpage('local_translate_courses_settings', get_string('pluginname', 'local_translate_courses'));
 
     $ADMIN->add('localplugins', $settings);
 
     if ($ADMIN->fulltree) {
-        $default = get_config('local_translate_courses', 'namecategory');
-
-        if ($default === false) {
-            $templatecategory = $DB->get_record('course_categories', array('name' => 'Course templates'));
-
-            // Set the new default administrator setting to 'Course templates' if it exists, if not default to 'Miscellaneous'.
-            if ($templatecategory !== false) {
-                $default = $templatecategory->id;
-            } else {
-                $default = 1;
-            }
-        }
-
-        $settings->add(
-            new admin_settings_coursecat_select(
-                'local_translate_courses/namecategory',
-                get_string('namecategory', 'local_translate_courses'),
-                get_string('namecategorydescription', 'local_translate_courses'),
-                $default
-            )
-        );
-
         $options = array(
             1 => get_string('jumpto_coursepage', 'local_translate_courses'),
             2 => get_string('jumpto_coursesettingspage', 'local_translate_courses')
@@ -103,8 +65,65 @@ if ($hassiteconfig) {
                 'local_translate_courses/mturl',
                 get_string('mturl', 'local_translate_courses'),
                 '',
-                'https://nmt-api.umuganda.digital/api/v1/translate/',
+                'https://nmt-api.umuganda.digital/api/v1/translate_html/translate_page',
+            )
+        );
+
+        $settings->add(
+            new admin_setting_configcheckbox(
+                'local_translate_courses/toggle_translation',
+                get_string('enable_translation', 'local_translate_courses'),
+                get_string('toggle_translation', 'local_translate_courses'),
+                1
+            )
+        );
+
+        $settings->add(
+            new admin_setting_configtextarea(
+                'local_translate_courses/source_languages',
+                new lang_string('source_languages', 'local_translate_courses'),
+                '',
+                'English(en),Kinyarwanda(rw)'
+            )
+        );
+
+        $settings->add(
+            new admin_setting_configtextarea(
+                'local_translate_courses/target_languages',
+                new lang_string('target_languages', 'local_translate_courses'),
+                '',
+                'Kinyarwanda(rw),English(en)'
+            )
+        );
+
+        $settings->add(
+            new admin_setting_configmultiselect(
+                'local_translate_courses/model',
+                get_string('model', 'local_translate_courses'),
+                '',
+                ['custom'],
+                ['custom' => 'Mbaza MT', 'google_translate' => 'Google Translate']
+            )
+        );
+
+        $settings->add(
+            new admin_setting_configcheckbox(
+                'local_translate_courses/toggle_content_library_switching',
+                get_string('enable_content_library_switching', 'local_translate_courses'),
+                get_string('toggle_content_library_switching', 'local_translate_courses'),
+                1
+            )
+        );
+
+        $settings->add(
+            new admin_setting_configtext(
+                'local_translate_courses/google_translate_api_key',
+                get_string('google_translate_api_key', 'local_translate_courses'),
+                '',
+                null,
             )
         );
     }
 }
+
+

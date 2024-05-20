@@ -26,7 +26,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'local_translate_courses';
 $plugin->cron = 0;
-$plugin->version  = 2023121702;
+$plugin->version  = 2024031617;
 $plugin->requires = 2018120300; // Moodle 3.6+.
 $plugin->maturity = MATURITY_STABLE;
-$plugin->release = 'Course templates plugin Version 4.2-a';
+$plugin->release = 'AI course translations plugin Version 1.0';

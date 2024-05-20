@@ -22,7 +22,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(dirname(__FILE__) . '/../../config.php');
+require_once (dirname(__FILE__) . '/../../config.php');
 
 @ini_set('max_execution_time', 0);
 @ini_set('display_errors', 0);
@@ -32,9 +32,9 @@ global $CFG, $DB, $USER;
 
 $CFG->debugdisplay = 0;
 
-require_once($CFG->dirroot . '/course/externallib.php');
-require_once($CFG->dirroot . '/course/format/lib.php');
-require_once(__DIR__ . '/lib.php');
+require_once ($CFG->dirroot . '/course/externallib.php');
+require_once ($CFG->dirroot . '/course/format/lib.php');
+require_once (__DIR__ . '/lib.php');
 
 require_login();
 require_sesskey();
@@ -62,23 +62,10 @@ if (isset($categoryid) && !empty($categoryid)) {
     $context = context_user::instance($USER->id);
 }
 
-$capabilities = array(
-    'moodle/backup:backupcourse',
-    'moodle/backup:userinfo',
-    'moodle/restore:restorecourse',
-    'moodle/restore:userinfo',
-    'moodle/course:create',
-    'moodle/site:approvecourse',
-);
-
-require_capability('local/translate_courses:view', $context);
-require_all_capabilities($capabilities, $context);
-
 $options = array(
     array('name' => 'blocks', 'value' => 1),
     array('name' => 'activities', 'value' => 1),
-    array('name' => 'filters', 'value' => 1),
-    array('name' => 'users', 'value' => 1)
+    array('name' => 'filters', 'value' => 1)
 );
 $visible = 1;
 
@@ -102,6 +89,19 @@ if (!$fullname || !$shortname || !$categoryid || !$courseid) {
 $externalobj = new core_course_external();
 
 try {
+    // Check if the course exists.
+    $course = $DB->get_record('course', array('fullname' => $fullname));
+    if ($course) {
+        \core\notification::error('Course name already exists. Please use another name for the course.');
+        exit(json_encode(array('status' => 0)));
+    }
+    
+    $course = $DB->get_record('course', array('shortname' => $shortname));
+    if ($course) {
+        \core\notification::error('Course shortname already exists. Please use another shortname for the course.');
+        exit(json_encode(array('status' => 0)));
+    }
+
     // Make sure the course's sections have proper labels.
     // See the set_label() method in /backup/util/ui/backup_ui_setting.class.php.
     // The set_label() method sanitizes the section name using PARAM_CLEANHTML (as of Moodle 3.11).
@@ -118,7 +118,7 @@ try {
 
     $res = $externalobj->duplicate_course($courseid, $fullname, $shortname . rand(10, 10000), $categoryid, $visible, $options);
 } catch (moodle_exception $e) {
-    \core\notification::error($e->getMessage());
+    \core\notification::error($e);
     exit(json_encode(array('status' => 0)));
 }
 
@@ -155,7 +155,7 @@ if (@isset($res['id'])) {
 
         if (in_array('lesson', $modstotranslate)) {
             // Translate lessons
-            $lessons = $DB->get_records_sql("SELECT lp.id, lp.contents, l.name, l.intro, lp.lessonid FROM mdl_lesson l RIGHT JOIN mdl_lesson_pages lp ON l.id = lp.lessonid WHERE l.course = '$res[id]'");
+            $lessons = $DB->get_records_sql("SELECT lp.id, lp.contents, l.name, l.intro, lp.lessonid FROM mdl_lesson l RIGHT JOIN mdl_lesson_pages lp ON l.id = lp.lessonid WHERE l.course = :resid", ['resid' => $res['id']]);
 
             foreach ($lessons as $key => $lesson) {
                 $lessonDataObject = new stdClass;
@@ -267,9 +267,7 @@ if (@isset($res['id'])) {
                 $DB->update_record('quiz', $quiz);
 
                 // Translate quiz questions
-                $quizQuestions = $DB->get_records_sql("SELECT q.id, q.questiontext, q.name, q.generalfeedback FROM mdl_quiz_slots slot LEFT JOIN mdl_question_references qr ON qr.component = 'mod_quiz' AND qr.questionarea = 'slot' AND qr.itemid = slot.id LEFT JOIN mdl_question_bank_entries qbe ON qbe.id = qr.questionbankentryid LEFT JOIN mdl_question_versions qv ON qv.questionbankentryid = qbe.id LEFT JOIN mdl_question q ON q.id = qv.questionid WHERE slot.quizid = '$quiz->id'");
-
-                // $quizSlots = $DB->get_records('quiz_slots', array('quizid' => $res['id']));
+                $quizQuestions = $DB->get_records_sql("SELECT q.id, q.questiontext, q.name, q.generalfeedback FROM mdl_quiz_slots slot LEFT JOIN mdl_question_references qr ON qr.component = 'mod_quiz' AND qr.questionarea = 'slot' AND qr.itemid = slot.id LEFT JOIN mdl_question_bank_entries qbe ON qbe.id = qr.questionbankentryid LEFT JOIN mdl_question_versions qv ON qv.questionbankentryid = qbe.id LEFT JOIN mdl_question q ON q.id = qv.questionid WHERE slot.quizid = :quizid", ['quizid' => $quiz->id]);
 
                 foreach ($quizQuestions as $key => $question) {
                     $questiondata = new stdClass;
@@ -286,6 +284,18 @@ if (@isset($res['id'])) {
                     }
 
                     $DB->update_record('question', $questiondata);
+
+                    // Translate question answers
+                    $questionAnswers = $DB->get_records('question_answers', array('question' => $question->id));
+
+                    foreach ($questionAnswers as $questionAnswer) {
+                        $questionAnswerData = new stdClass;
+                        $questionAnswerData->id = $questionAnswer->id;
+                        if ($questionAnswer->answer != null) $questionAnswerData->answer = generate_translation($questionAnswer->answer, $sourcelanguage, $targetlanguage, $translator);
+                        if ($questionAnswer->feedback != null) $questionAnswerData->feedback = generate_translation($questionAnswer->feedback, $sourcelanguage, $targetlanguage, $translator);
+
+                        $DB->update_record('question_answers', $questionAnswerData);
+                    }
                 }
             }
         }
@@ -397,6 +407,17 @@ if (@isset($res['id'])) {
             }
         }
 
+        if (in_array('feedback', $modstotranslate)) {
+            $feedbacks = $DB->get_records('feedback', array('course' => $res['id']));
+
+            foreach ($feedbacks as $key => $feedback) {
+                $feedback->name = generate_translation($feedback->name, $sourcelanguage, $targetlanguage, $translator);
+                $feedback->intro = generate_translation($feedback->intro, $sourcelanguage, $targetlanguage, $translator);
+
+                $DB->update_record('feedback', $feedback);
+            }
+        }
+
         // Translate custom fields
         $time = new DateTime("now", core_date::get_user_timezone_object());
 
@@ -407,32 +428,63 @@ if (@isset($res['id'])) {
         save_related_courses($res['id'], $courseid);
         save_related_courses($courseid, $res['id']);
 
-        $course_language_field = $DB->get_record('customfield_field', array('shortname' => 'course_language'));
+        updateCustomField('course_language', $res['id'], 'intvalue', 9, $context->id);
 
-        $customfielddata = $DB->get_record('customfield_data', array('fieldid' => $course_language_field->id, 'instanceid' => $res['id']));
+        // Update course language
+        $languages_field = $DB->get_record('customfield_field', array('shortname' => 'languages'));
+        $configdataoptionsarray = json_decode($languages_field->configdata, true);
+        $configdataoptionsarray = preg_split("/\s*\n\s*/", trim($configdataoptionsarray['options']));
 
-        if ($customfielddata != false) {
-            $customfielddata->timemodified = $timestamp;
-            $customfielddata->intvalue = 9;
-            $customfielddata->value = 9;
-
-            $DB->update_record('customfield_data', $customfielddata);
-        } else {
-            $dataObject = new stdClass;
-
-            $dataObject->fieldid = $course_language_field->id;
-            $dataObject->instanceid = $res['id'];
-            $dataObject->intvalue = 9;
-            $dataObject->value = 9;
-            $dataObject->timecreated = $timestamp;
-            $dataObject->timemodified = $timestamp;
-            $dataObject->contextid = $context->id;
-            $dataObject->valueformat = 0;
-
-            $DB->insert_record('customfield_data', $dataObject);
+        $languagekey = 0;
+        foreach ($configdataoptionsarray as $key => $value) {
+            $language = explode('<', explode('>', $configdataoptionsarray[$key])[1])[0];
+            if (array_search($language, get_string_manager()->get_list_of_languages()) == $targetlanguage) {
+                $languagekey = $key;
+            }
         }
 
-        // $DB->execute("'$original_course_field->id', '$res[id]', $courseid, '$courseid', '$timestamp', '$timestamp', '$context->id')");
+        updateCustomField('languages', $res['id'], 'value', $languagekey, $context->id);
+        updateCustomField('status', $res['id'], 'intvalue', 1, $context->id);
+
+        // Translate objectives custom field
+        $objectives_fielddata = getCustomFieldData('objectives', $res['id']);
+        $objectives = $objectives_fielddata->value;
+        if (!empty($objectives) && $objectives != null) {
+            $translated_objectives = generate_translation($objectives, $sourcelanguage, $targetlanguage, $translator);
+
+            // Update objectives custom field
+            updateCustomField('objectives', $res['id'], 'value', $translated_objectives, $context->id);
+        }
+
+        // Translate target audience custom field
+        $target_audience_fielddata = getCustomFieldData('target_audience', $res['id']);
+        $target_audience = $target_audience_fielddata->value;
+        if (!empty($target_audience) && $target_audience != null) {
+            $translated_target_audience = generate_translation($target_audience, $sourcelanguage, $targetlanguage, $translator);
+
+            // Update target audience custom field
+            updateCustomField('target_audience', $res['id'], 'value', $translated_target_audience, $context->id);
+        }
+
+        // Translate certification custom field
+        $certification_fielddata = getCustomFieldData('certification', $res['id']);
+        $certification = $certification_fielddata->value;
+        if (!empty($certification) && $certification != null) {
+            $translated_certification = generate_translation($certification, $sourcelanguage, $targetlanguage, $translator);
+
+            // Update certification custom field
+            updateCustomField('certification', $res['id'], 'value', $translated_certification, $context->id);
+        }
+
+        // Translate course contact custom field
+        $course_contact_fielddata = getCustomFieldData('course_contact', $res['id']);
+        $course_contact = $course_contact_fielddata->value;
+        if (!empty($course_contact) && $course_contact != null) {
+            $translated_course_contact = generate_translation($course_contact, $sourcelanguage, $targetlanguage, $translator);
+
+            // Update course contact custom field
+            updateCustomField('course_contact', $res['id'], 'charvalue', $translated_course_contact, $context->id);
+        }
 
         if (!empty($startdatetime)) {
             $course->startdate = $startdatetime;
@@ -462,6 +514,6 @@ if (@isset($res['id'])) {
 
     exit(json_encode(array('status' => 1, 'id' => $res['id'], 'shortname' => $res['shortname'])));
 } else {
-    \core\notification::error(get_string('unknownerror', 'core'));
+    \core\notification::error(get_string('failed', 'local_translate_courses'));
     exit(json_encode(array('status' => 0)));
 }

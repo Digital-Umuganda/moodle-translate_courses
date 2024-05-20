@@ -81,7 +81,9 @@ window.onload = function () {
                             dataType: "json",
                             beforeSend: function () {
                                 $('#btnProcess').parent().children().hide();
+                                $('#btnProcess').parent().append("<div>Please be patient, the translation will take minutes.</div>")
                                 $('#btnProcess').after('<div id="local-course-templates-throbber"></div>');
+                                $('#btnProcess').parent().append("<div>Please be patient, the translation will take minutes.</div>")
                             },
                             success: function (data, textStatus) {
                                 if (

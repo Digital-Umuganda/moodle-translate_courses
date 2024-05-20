@@ -33,32 +33,6 @@ use local_translate_courses\coursetemplateslistform;
  *
  * @return navigation_node
  */
-function local_translate_courses_extend_navigation_category_settings($parentnode, $context)
-{
-    $capabilities = array(
-        'moodle/backup:backupcourse',
-        'moodle/backup:userinfo',
-        'moodle/restore:restorecourse',
-        'moodle/restore:userinfo',
-        'moodle/course:create',
-        'moodle/site:approvecourse',
-    );
-
-    if (
-        has_capability('local/translate_courses:view', $context)
-        && has_all_capabilities($capabilities, $context)
-    ) {
-        $parentnode->add(
-            get_string('addcourse', 'local_translate_courses'),
-            new moodle_url('/local/translate_courses/index.php', array('cateid' => $context->instanceid)),
-            navigation_node::TYPE_SETTING,
-            null,
-            null,
-            new pix_icon('t/add', get_string('addcourse', 'local_translate_courses'))
-        );
-    }
-    ;
-}
 
 /**
  * Gets the list of templates.
@@ -73,9 +47,9 @@ function get_template_list()
 
     $namecategoryid = get_config('local_translate_courses', 'namecategory');
 
-    $sql = "select id, fullname from {course} where category = (select id from {course_categories} where id='$namecategoryid')";
+    $sql = "select id, fullname from {course} where category = (select id from {course_categories} where id= :namecategoryid)";
 
-    return $DB->get_records_sql($sql);
+    return $DB->get_records_sql($sql, ['namecategoryid' => $namecategoryid]);
 }
 
 /**
@@ -100,7 +74,7 @@ function get_template_list_form($cateid = null)
         $context = context_user::instance($USER->id);
     }
 
-    $redirecturl = $CFG->wwwroot . '/local/translate_courses/index.php?cateid=' . $cateid . '&step=2';
+    $redirecturl = new moodle_url('/local/translate_courses/index.php', array('cateid' => $cateid, 'step' => 2));
 
     $rows = get_template_list();
 
@@ -139,22 +113,11 @@ function get_template_list_form($cateid = null)
 function get_template_categories_form($cid, $cateid = null)
 {
     global $CFG, $USER;
-
-    $capabilities = array(
-        'moodle/backup:backupcourse',
-        'moodle/backup:userinfo',
-        'moodle/restore:restorecourse',
-        'moodle/restore:userinfo',
-        'moodle/course:create',
-        'moodle/site:approvecourse',
-        'local/translate_courses:view',
-    );
-
     $cateid = (int) $cateid ?? 1;
 
-    $redirecturl = $CFG->wwwroot . '/local/translate_courses/index.php?cateid=' . $cateid . '&step=3&cid=' . $cid;
+    $redirecturl = new moodle_url('/local/translate_courses/index.php', array('cateid' => $cateid, 'step' => 3, 'cid' => $cid));
 
-    $rowsarray = \core_course_category::make_categories_list($capabilities);
+    $rowsarray = \core_course_category::make_categories_list();
 
     $categoriesarray = array();
 
@@ -207,15 +170,9 @@ function get_template_setting_form($cid, $categoryid, $cateid = null, $sourcelan
     }
 
     $course = $DB->get_record('course', array('id' => $cid));
-
-    $redirecturl = $CFG->wwwroot . '/local/translate_courses/process.php?cateid=' . $cateid . '&cid='
-        . $cid . '&srclang='
-        . $sourcelanguage . '&tgtlang='
-        . $targetlanguage . '&translator='
-        . $translator . '&modstotranslate='
-        . json_encode($modstotranslate)
-        . '&sesskey='
-        . sesskey();
+    
+    // Rewrite the redirect url using new moodle_url
+    $redirecturl = new moodle_url('/local/translate_courses/process.php', array('cateid' => $cateid, 'cid' => $cid, 'srclang' => $sourcelanguage, 'tgtlang' => $targetlanguage, 'translator' => $translator, 'modstotranslate' => json_encode($modstotranslate), 'sesskey' => sesskey()));
 
     $returnurl = $CFG->wwwroot . '/local/translate_courses/index.php?cateid=' . $cateid . '&step=4';
 
@@ -362,7 +319,7 @@ function get_template_setting_form($cid, $categoryid, $cateid = null, $sourcelan
                 'input',
                 array(
                     'type' => 'button',
-                    'value' => get_string('continue', 'local_translate_courses'),
+                    'value' => get_string('translate', 'local_translate_courses'),
                     'id' => 'btnProcess',
                     'class' => 'btn btn-primary'
                 )
@@ -372,43 +329,6 @@ function get_template_setting_form($cid, $categoryid, $cateid = null, $sourcelan
     $output .= '<script>$("#course_date") . datetimepicker({minView: "month",format: "yyyy-mm-dd", autoclose:true});</script>';
 
     return $output;
-}
-
-// Make sure that we are compatible with Moodle 3.6+.
-if (!function_exists('require_all_capabilities')) {
-    /**
-     * A convenience function that tests has_capability for a list of capabilities, and displays an error if
-     * the user does not have that capability.
-     *
-     * This is just a utility method that calls has_capability in a loop. Try to put
-     * the capabilities that fewest users are likely to have first in the list for best
-     * performance.
-     *
-     * @category access
-     * @see has_capability()
-     *
-     * @param array $capabilities an array of capability names.
-     * @param context $context the context to check the capability in. You normally get this with context_xxxx::instance().
-     * @param int $userid A user id. By default (null) checks the permissions of the current user.
-     * @param bool $doanything If false, ignore effect of admin role assignment
-     * @param string $errormessage The error string to to user. Defaults to 'nopermissions'.
-     * @param string $stringfile The language file to load the error string from. Defaults to 'error'.
-     * @return void terminates with an error if the user does not have the given capability.
-     */
-    function require_all_capabilities(
-        array $capabilities,
-        context $context,
-        $userid = null,
-        $doanything = true,
-        $errormessage = 'nopermissions',
-        $stringfile = ''
-    ): void {
-        foreach ($capabilities as $capability) {
-            if (!has_capability($capability, $context, $userid, $doanything)) {
-                throw new required_capability_exception($context, $capability, $errormessage, $stringfile);
-            }
-        }
-    }
 }
 
 /**
@@ -442,7 +362,7 @@ function custom_translation($text, $sourcelanguage, $targetlanguage)
         );
     }
 
-    $url = new moodle_url(get_config('local_translate_courses', 'mturl'));
+	$url = get_config('local_translate_courses', 'mturl');
 
     try {
         $params = [
@@ -454,15 +374,13 @@ function custom_translation($text, $sourcelanguage, $targetlanguage)
         $params['text'] = $text;
         $resp = $curl->post($url->out(false), json_encode($params));
     } catch (\Exception $ex) {
-        error_log("Error: Mbaza Translate not responding");
-        // error_log("Error: Mbaza Translate not responding: \n" . $ex->getMessage());
+        error_log(get_string('error') . ": \n" . $ex->getMessage());
         return null;
     }
 
     $info = $curl->get_info();
     if ($info['http_code'] != 200) {
-        // error_log("Error: Mbaza Translate not responding: \n" . $info['http_code'] . "\nFailed Text:\n" . substr($text, 0, 1000) . "\n" . print_r($curl->get_raw_response(), true));
-        error_log("Error: Mbaza Translate not responding: \n");
+        error_log(get_string('error') .  ": \n" . $info['http_code'] . "\nFailed Text:\n" . substr($text, 0, 1000) . "\n" . print_r($curl->get_raw_response(), true));
         return null;
     }
 
@@ -504,29 +422,13 @@ function google_translate(string $text, string $sourcelanguage, string $targetla
  */
 function generate_translation(string $html, string $sourcelanguage, string $targetlanguage, string $function = "custom")
 {
-    $tagsToRemove = ['img', 'video', 'audio'];
-    $removedTags = [];
-    // Remove specified tags before sending to the API
-    $modifiedHtml = removeTags($html, $tagsToRemove, $removedTags);
-
-    $extractedText = splitTextBetweenDivAndP($modifiedHtml);
-
-    foreach ($extractedText as $index => $text) {
-        // Send each extracted text to the API
-        if ($function == "custom") {
-            $apiResponse = custom_translation($text, $sourcelanguage, $targetlanguage);
-        } else if ($function == "google_translate") {
-            $apiResponse = google_translate($text, $sourcelanguage, $targetlanguage);
-        }
-
-        // Replace the original text with the API response
-        $modifiedHtml = str_replace($text, $apiResponse, $modifiedHtml);
+    if ($function == "custom") {
+        $apiResponse = custom_translation($html, $sourcelanguage, $targetlanguage);
+    } else if ($function == "google_translate") {
+        $apiResponse = google_translate($html, $sourcelanguage, $targetlanguage);
     }
-
-    // Add removed tags back to the modified HTML
-    $finalHtml = addTagsBack($modifiedHtml, $removedTags);
     
-    return $finalHtml;
+    return $apiResponse;
 }
 
 function save_related_courses($courseid, $related_course)
@@ -593,7 +495,7 @@ function removeTags($html, $tags, &$removedTags) {
         $removedTags[$tag] = $matches[0];
 
         // Remove the tags from the HTML
-        $html = preg_replace($pattern, '[removeme_' . $tag . ']', $html);
+        $html = preg_replace($pattern, '[RMVM_' . $tag . ']', $html);
     }
     return $html;
 }
@@ -601,7 +503,7 @@ function removeTags($html, $tags, &$removedTags) {
 function addTagsBack($modifiedHtml, $removedTags) {
     foreach ($removedTags as $tag => $tagsToRemove) {
         foreach ($tagsToRemove as $tagToRemove) {
-            $modifiedHtml = preg_replace('/\[removeme_' . $tag . '\]/', $tagToRemove, $modifiedHtml, 1);
+            $modifiedHtml = preg_replace('/\[RMVM_' . $tag . '\]/', $tagToRemove, $modifiedHtml, 1);
         }
     }
     return $modifiedHtml;
@@ -609,10 +511,43 @@ function addTagsBack($modifiedHtml, $removedTags) {
 
 function splitTextBetweenDivAndP($html)
 {
-    preg_match_all('/<div[^>]*>(.*?)<\/div>|<p[^>]*>(.*?)<\/p>/', $html, $matches);
-    $combinedText = array_merge($matches[1], $matches[2]);
-    $filteredText = array_filter($combinedText);
-    return array_values($filteredText);
+    $saveTag = $saveTagContent = false;
+    $tagContent = $currentText = "";
+    $savedText = [];
+    
+    $htmlArray = str_split($html);
+
+    foreach ($htmlArray as $char) {
+
+        if ($char == '<') {
+            $saveTag = true;
+            $saveTagContent = false;
+        }
+
+        if ($saveTag) { $tagContent .= $char; }
+
+        if ($char == '>') {
+
+            $saveTag = false;
+            $saveTagContent = true;
+
+            $text = trim($currentText);
+            $closingTag = str_split($tagContent)[1] == '/';
+
+            if ($closingTag && $text != "") {
+                array_push($savedText, $text);
+                $currentText = "";
+            }
+
+            $tagContent = "";
+
+        }
+        
+        else if ($saveTagContent) { $currentText .= $char; }
+
+    }
+
+    return $savedText;
 }
 
 function processTranslation(string $html, string $sourcelanguage, string $targetlanguage, string $function = "custom")
@@ -640,4 +575,43 @@ function processTranslation(string $html, string $sourcelanguage, string $target
     $finalHtml = addTagsBack($modifiedHtml, $tagsToRemove);
     
     return $finalHtml;
+}
+
+function updateCustomField($shortname, $instanceid, $valuecolumn, $value, $contextid, $valueformat = 0)
+{
+    global $DB;
+
+    $customfielddata = getCustomFieldData($shortname, $instanceid);
+
+    $time = new DateTime("now", core_date::get_user_timezone_object());
+
+    $timestamp = $time->getTimestamp();
+
+    if ($customfielddata != false) {
+        $customfielddata->timemodified = $timestamp;
+        $customfielddata->$valuecolumn = $value;
+        $customfielddata->value = $value;
+
+        $DB->update_record('customfield_data', $customfielddata);
+    } else {
+        $dataObject = new stdClass;
+
+        $dataObject->fieldid = $customfielddata->fieldid;
+        $dataObject->instanceid = $instanceid;
+        $dataObject->$valuecolumn = $value;
+        $dataObject->value = $value;
+        $dataObject->timecreated = $timestamp;
+        $dataObject->timemodified = $timestamp;
+        $dataObject->contextid = $contextid;
+        $dataObject->valueformat = $valueformat;
+
+        $DB->insert_record('customfield_data', $dataObject);
+    }
+}
+
+function getCustomFieldData($shortname, $instanceid) {
+    global $DB;
+    $customfieldfield = $DB->get_record('customfield_field', array('shortname' => $shortname));
+
+    return $DB->get_record('customfield_data', array('fieldid' => $customfieldfield->id, 'instanceid' => $instanceid));
 }
