@@ -22,8 +22,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once (dirname(__FILE__) . '/../../config.php');
-require_once ('lib.php');
+require_once(dirname(__FILE__) . '/../../config.php');
+require_once('lib.php');
 
 use local_translate_courses\coursecategorieslistform;
 
@@ -56,7 +56,7 @@ $PAGE->requires->css(new moodle_url('/local/translate_courses/styles.css'));
 $PAGE->set_pagelayout('standard');
 
 if (!$PAGE->user_is_editing()) {
-    redirect($CFG->wwwroot . '/course/view.php?id=' . $_SESSION['lastcid']);
+    redirect(new moodle_url('/course/view.php?id=' . $_SESSION['lastcid']));
 }
 
 switch ($step) {
@@ -79,7 +79,7 @@ $pagetitle = $banner . ' - ' . $pageheading;
 $PAGE->set_title($pagetitle);
 $PAGE->set_heading($header);
 
-$redirecturl = $CFG->wwwroot . '/local/translate_courses/index.php';
+$redirecturl = new moodle_url('/local/translate_courses/index.php');
 
 $courseidarray = array();
 $categoryidarray = array();

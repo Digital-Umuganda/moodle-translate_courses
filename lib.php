@@ -174,14 +174,15 @@ function get_template_setting_form($cid, $categoryid, $cateid = null, $sourcelan
     // Rewrite the redirect url using new moodle_url
     $redirecturl = new moodle_url('/local/translate_courses/process.php', array('cateid' => $cateid, 'cid' => $cid, 'srclang' => $sourcelanguage, 'tgtlang' => $targetlanguage, 'translator' => $translator, 'modstotranslate' => json_encode($modstotranslate), 'sesskey' => sesskey()));
 
-    $returnurl = $CFG->wwwroot . '/local/translate_courses/index.php?cateid=' . $cateid . '&step=4';
+    $returnurl = new moodle_url('/local/translate_courses/index.php', array('cateid' => $cateid, 'step' => 4));
 
     $output = '';
-    $output .= '<script src="' . $CFG->wwwroot . '/local/translate_courses/js/jquery-1.8.3.min.js"></script>';
-    $output .= '<link rel="stylesheet" href="' . $CFG->wwwroot . '/local/translate_courses/css/bootstrap-datetimepicker.css">';
-    $output .= '<link rel="stylesheet" href="' . $CFG->wwwroot . '/local/translate_courses/css/throbber.css">';
-    $output .= '<script src="' . $CFG->wwwroot . '/local/translate_courses/js/bootstrap-datetimepicker.js"></script>';
-    $output .= '<script src="' . $CFG->wwwroot . '/local/translate_courses/js/process.js"></script>';
+    global $PAGE;
+    $PAGE->requires->js(new moodle_url('/local/translate_courses/js/jquery-1.8.3.min.js'));
+    $PAGE->requires->css(new moodle_url('/local/translate_courses/css/bootstrap-datetimepicker.css'));
+    $PAGE->requires->css(new moodle_url('/local/translate_courses/css/throbber.css'));
+    $PAGE->requires->js(new moodle_url('/local/translate_courses/js/bootstrap-datetimepicker.js'));
+    $PAGE->requires->js(new moodle_url('/local/translate_courses/js/process.js'));
     $output .= '<div id="translate_courses_validation_error_message" data-validation-message="'
         . get_string('requiredelement', 'form')
         . '"></div>';

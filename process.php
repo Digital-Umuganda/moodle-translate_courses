@@ -25,12 +25,8 @@
 require_once (dirname(__FILE__) . '/../../config.php');
 
 @ini_set('max_execution_time', 0);
-@ini_set('display_errors', 0);
-@error_reporting(0);
 
 global $CFG, $DB, $USER;
-
-$CFG->debugdisplay = 0;
 
 require_once ($CFG->dirroot . '/course/externallib.php');
 require_once ($CFG->dirroot . '/course/format/lib.php');
@@ -124,7 +120,7 @@ try {
 
 sleep(3);
 
-if (@isset($res['id'])) {
+if (isset($res['id'])) {
     try {
         $course = $DB->get_record('course', array('id' => $res['id']));
 
