@@ -372,7 +372,7 @@ function custom_translation($text, $sourcelanguage, $targetlanguage)
             'use_multi' => 'multi'
         ];
         $params['text'] = $text;
-        $resp = $curl->post($url->out(false), json_encode($params));
+        $resp = $curl->post($url, json_encode($params));
     } catch (\Exception $ex) {
         error_log(get_string('error') . ": \n" . $ex->getMessage());
         return null;
