@@ -33,7 +33,6 @@ $capabilities = array(
             'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW,
             'coursecreator' => CAP_ALLOW,
-            'atingicategorymanager' => CAP_ALLOW,
         )
     ),
     'local/translate_courses:edit' => array(
@@ -43,7 +42,6 @@ $capabilities = array(
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW,
-            'atingicategorymanager' => CAP_ALLOW,
         )
     ),
 );
